@@ -6,7 +6,7 @@ import os
 
 class PDFService:
     @staticmethod
-    def generate_health_report_pdf(report_data, user_id):
+    def generate_health_report_pdf(report_data, user_id, recommendations=None):
         if not report_data:
             return None
 
@@ -72,6 +72,29 @@ class PDFService:
         generated_at = report_data.get("generated_at")
         if generated_at:
             c.drawString(50, y_position, f"Report generated at: {str(generated_at)}")
+
+
+        if recommendations:
+            y_position -= 40
+            c.setFont("Helvetica-Bold", 14)
+            c.setFillColor(colors.darkgreen)
+            c.drawString(50, y_position, "AI-Based Recommendations")
+            c.line(50, y_position - 5, width - 50, y_position - 5)
+            y_position -= 25
+
+            # Reset styling
+            c.setFont("Helvetica", 11)
+            c.setFillColor(colors.black)
+
+            # Handle long text (wrap lines manually)
+            lines = recommendations.split('\n')
+            for line in lines:
+                if y_position < 100:
+                    c.showPage()
+                    y_position = height - 60
+                    c.setFont("Helvetica", 11)
+                c.drawString(60, y_position, line.strip())
+                y_position -= 16
 
         c.save()
         return pdf_path

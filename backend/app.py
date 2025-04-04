@@ -6,6 +6,9 @@ from routes.authRoutes import auth_bp
 from routes.healthRoutes import health_bp
 import os
 from dotenv import load_dotenv
+from routes.recommendationRoutes import recommendation_bp
+
+
 
 load_dotenv()  # Load environment variables
 
@@ -23,6 +26,7 @@ jwt = JWTManager(app)
 app.register_blueprint(prediction_bp, url_prefix="/api")
 app.register_blueprint(auth_bp, url_prefix="/api")
 app.register_blueprint(health_bp, url_prefix="/api")
+app.register_blueprint(recommendation_bp, url_prefix="/api")
 
 if __name__ == "__main__":
     app.run(debug=True)
