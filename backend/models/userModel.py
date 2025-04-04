@@ -7,20 +7,23 @@ class UserModel:
     collection = db["users"]  # Collection for users
 
     @staticmethod
-    def create_user(name, email, password):
+    def create_user(name, email, password, age=None, gender=None):
         """Creates a new user with hashed password."""
         if UserModel.collection.find_one({"email": email}):
             return {"error": "Email already exists"}, 400
 
         hashed_password = generate_password_hash(password)
         user_data = {
-            "_id": str(uuid.uuid4()),  # Unique user ID
+            "_id": str(uuid.uuid4()),
             "name": name,
             "email": email,
-            "password": hashed_password
+            "password": hashed_password,
+            "age": age,
+            "gender": gender
         }
         UserModel.collection.insert_one(user_data)
         return {"message": "User registered successfully"}, 201
+
 
     @staticmethod
     def verify_user(email, password):

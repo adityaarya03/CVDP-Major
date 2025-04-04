@@ -2,47 +2,32 @@ from flask import Blueprint, request, jsonify
 import jwt
 import datetime
 import os
-from functools import wraps
 from models.userModel import UserModel
 from dotenv import load_dotenv
+from middlewares.authMiddleware import token_required  # Import middleware
+from middlewares.errorHandler import handle_error  # Import error handler
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 
 load_dotenv()
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 auth_bp = Blueprint("auth_bp", __name__)
-
-def token_required(f):
-    """Middleware to protect routes with JWT authentication"""
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.headers.get("Authorization")
-        if not token:
-            return jsonify({"error": "Token is missing"}), 401
-        try:
-            decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            current_user = UserModel.get_user_by_id(decoded_token["user_id"])
-            if not current_user:
-                return jsonify({"error": "User not found"}), 401
-        except jwt.ExpiredSignatureError:
-            return jsonify({"error": "Token has expired"}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({"error": "Invalid token"}), 401
-        return f(current_user, *args, **kwargs)
-    return decorated
 
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
     """Handles user registration"""
     data = request.json
     name = data.get("name")
+    age = data.get("age")
+    gender = data.get("gender")
     email = data.get("email")
     password = data.get("password")
 
     if not name or not email or not password:
-        return jsonify({"error": "All fields are required"}), 400
+        return handle_error("All fields are required", 400)
 
-    response, status_code = UserModel.create_user(name, email, password)
+    response, status_code = UserModel.create_user(name, email, password, age, gender)
     return jsonify(response), status_code
 
 @auth_bp.route("/login", methods=["POST"])
@@ -52,9 +37,12 @@ def login():
     email = data.get("email")
     password = data.get("password")
 
+    if not email or not password:
+        return handle_error("Email and password are required", 400)
+
     user = UserModel.verify_user(email, password)
     if not user:
-        return jsonify({"error": "Invalid email or password"}), 401
+        return handle_error("Invalid email or password", 401)
 
     token = jwt.encode(
     {
@@ -66,3 +54,45 @@ def login():
     algorithm="HS256"
     )
     return jsonify({"message": "Login successful", "token": token, "user_id": user["_id"]}), 200
+
+@auth_bp.route("/profile", methods=["GET"])
+@jwt_required()
+def get_profile():
+    user_id = get_jwt_identity()
+    user = UserModel.get_user_by_id(user_id)
+    if not user:
+        return handle_error("User not found", 404)
+    
+    user["_id"] = str(user["_id"])
+    return jsonify(user), 200
+
+@auth_bp.route("/profile", methods=["PUT"])
+@jwt_required()
+def update_profile():
+    user_id = get_jwt_identity()
+    data = request.get_json()
+
+    # Only allow specific fields
+    update_fields = {}
+    for field in ["name", "age", "gender"]:
+        if field in data:
+            update_fields[field] = data[field]
+
+    if not update_fields:
+        return handle_error("No valid fields provided to update", 400)
+
+    result = UserModel.collection.update_one(
+        {"_id": user_id},
+        {"$set": update_fields}
+    )
+
+    if result.matched_count == 0:
+        return handle_error("User not found", 404)
+
+    return jsonify({"message": "Profile updated successfully"}), 200
+
+@auth_bp.route("/logout", methods=["POST"])
+@jwt_required()
+def logout():
+    # Nothing to do server-side if using stateless JWTs
+    return jsonify({"message": "Logged out successfully"}), 200
