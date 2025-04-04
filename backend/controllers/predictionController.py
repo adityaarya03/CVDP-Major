@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from services.mlService import load_models, predict_with_models, load_scaler, FEATURES
+from models.predictionModel import PredictionModel  # Import prediction model
 import numpy as np
+from flask_jwt_extended import jwt_required, get_jwt_identity  # Import JWT methods
 
 # Create a Blueprint for prediction routes
 prediction_bp = Blueprint("prediction", __name__)
@@ -12,9 +14,12 @@ models = load_models()
 scaler = load_scaler()
 
 @prediction_bp.route("/predict", methods=["POST"])
+@jwt_required()  # Require authentication
 def predict():
     try:
+        user_id = get_jwt_identity()  # Get user ID from JWT token
         data = request.get_json()
+
         if not data:
             return jsonify({"error": "No input data provided"}), 400
 
@@ -40,6 +45,21 @@ def predict():
         # Calculate the average prediction
         avg_prediction = sum(model_predictions.values()) / len(model_predictions)
 
+        # Save to MongoDB with user reference
+        PredictionModel.save_prediction(user_id, data, model_predictions)
+
         return jsonify({"predictions": model_predictions, "average_prediction": avg_prediction})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@prediction_bp.route("/history", methods=["GET"])
+@jwt_required()  # Require authentication
+def get_prediction_history():
+    try:
+        user_id = get_jwt_identity()  # Get user ID from JWT token
+        history = PredictionModel.get_recent_predictions(user_id, 10)
+        return jsonify({"history": history})
+    except Exception as e:
+        print("Error fetching history:", str(e))
+        return jsonify({"error": "Server error"}), 500
