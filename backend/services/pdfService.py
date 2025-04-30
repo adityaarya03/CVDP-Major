@@ -1,8 +1,10 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import Paragraph, Frame
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import os
+import textwrap
 
 class PDFService:
     @staticmethod
@@ -15,86 +17,109 @@ class PDFService:
 
         c = canvas.Canvas(pdf_path, pagesize=letter)
         width, height = letter
-        c.setFont("Helvetica-Bold", 18)
+        margin = 50
+
+        styles = getSampleStyleSheet()
+        normal_style = styles["Normal"]
+        header_style = ParagraphStyle('Header', parent=styles['Heading2'], textColor=colors.darkblue)
+        subheader_style = ParagraphStyle('SubHeader', parent=styles['Heading3'], textColor=colors.darkgreen)
+        wrap_width = 90  # Max characters per line for wrapping
+
+        # Title
+        c.setFont("Helvetica-Bold", 20)
         c.setFillColor(colors.darkblue)
         c.drawCentredString(width / 2.0, height - 60, "Health Report")
-
         c.setStrokeColor(colors.black)
-        c.line(50, height - 70, width - 50, height - 70)
+        c.line(margin, height - 70, width - margin, height - 70)
 
-        y_position = height - 100
+        y = height - 100
         c.setFont("Helvetica", 12)
         c.setFillColor(colors.black)
 
-        # User Info
+        # Basic Info
         name = report_data.get("name", "N/A")
         age = report_data.get("age", "N/A")
         gender_val = report_data.get("gender")
         gender = "Male" if gender_val == 1 else "Female" if gender_val == 0 else "N/A"
 
-        c.drawString(50, y_position, f"Name: {name}")
-        y_position -= 20
-        c.drawString(50, y_position, f"User ID: {user_id}")
-        y_position -= 20
-        c.drawString(50, y_position, f"Age: {age}")
-        y_position -= 20
-        c.drawString(50, y_position, f"Gender: {gender}")
+        user_info = [
+            f"Name: {name}",
+            f"User ID: {user_id}",
+            f"Age: {age}",
+            f"Gender: {gender}"
+        ]
+        for info in user_info:
+            c.drawString(margin, y, info)
+            y -= 20
 
-        y_position -= 30
+        y -= 10
+        # Health Metrics Header
         c.setFont("Helvetica-Bold", 14)
-        c.drawString(50, y_position, "Average Health Metrics")
-        c.line(50, y_position - 5, width - 50, y_position - 5)
+        c.setFillColor(colors.darkred)
+        c.drawString(margin, y, "Average Health Metrics")
+        c.line(margin, y - 5, width - margin, y - 5)
+        y -= 25
 
         c.setFont("Helvetica", 12)
-        y_position -= 25
-
+        c.setFillColor(colors.black)
         metrics = report_data.get("average_metrics", {})
         for key, value in metrics.items():
             formatted_key = key.replace("_", " ").title()
             display_val = value if value is not None else "N/A"
-            c.drawString(60, y_position, f"{formatted_key}: {display_val}")
-            y_position -= 20
+            c.drawString(margin + 10, y, f"{formatted_key}: {display_val}")
+            y -= 18
 
-        # Risk score
-        y_position -= 10
+        y -= 10
+        # Risk Score
         c.setFont("Helvetica-Bold", 14)
-        c.drawString(50, y_position, "Overall Risk Evaluation")
-        c.line(50, y_position - 5, width - 50, y_position - 5)
-        y_position -= 25
+        c.setFillColor(colors.darkred)
+        c.drawString(margin, y, "Overall Risk Evaluation")
+        c.line(margin, y - 5, width - margin, y - 5)
+        y -= 25
         avg_risk = report_data.get("average_risk_score", "N/A")
         c.setFont("Helvetica", 12)
-        c.drawString(60, y_position, f"Average Risk Score: {avg_risk}")
+        c.setFillColor(colors.black)
+        c.drawString(margin + 10, y, f"Average Risk Score: {avg_risk}")
+        y -= 30
 
-        # Generated timestamp (optional)
-        y_position -= 40
-        c.setFont("Helvetica-Oblique", 10)
-        c.setFillColor(colors.grey)
+        # Timestamp
         generated_at = report_data.get("generated_at")
         if generated_at:
-            c.drawString(50, y_position, f"Report generated at: {str(generated_at)}")
+            c.setFont("Helvetica-Oblique", 10)
+            c.setFillColor(colors.grey)
+            c.drawString(margin, y, f"Report generated at: {str(generated_at)}")
+            y -= 30
 
-
+        # AI Recommendations Section
         if recommendations:
-            y_position -= 40
+            if y < 180:  # Create space
+                c.showPage()
+                y = height - 80
+
             c.setFont("Helvetica-Bold", 14)
             c.setFillColor(colors.darkgreen)
-            c.drawString(50, y_position, "AI-Based Recommendations")
-            c.line(50, y_position - 5, width - 50, y_position - 5)
-            y_position -= 25
+            c.drawString(margin, y, "AI-Based Health Recommendations")
+            c.line(margin, y - 5, width - margin, y - 5)
+            y -= 25
 
-            # Reset styling
+            # Box background for recommendations
+            box_top = y + 20
+            box_bottom = y
+
+            # Prepare wrapped lines
             c.setFont("Helvetica", 11)
             c.setFillColor(colors.black)
-
-            # Handle long text (wrap lines manually)
-            lines = recommendations.split('\n')
-            for line in lines:
-                if y_position < 100:
-                    c.showPage()
-                    y_position = height - 60
-                    c.setFont("Helvetica", 11)
-                c.drawString(60, y_position, line.strip())
-                y_position -= 16
+            for section in recommendations.split('\n\n'):
+                for line in section.strip().split('\n'):
+                    wrapped = textwrap.wrap(line.strip(), width=wrap_width)
+                    for wline in wrapped:
+                        if y < 80:
+                            c.showPage()
+                            y = height - 80
+                            c.setFont("Helvetica", 11)
+                        c.drawString(margin + 10, y, f"• {wline}")
+                        y -= 16
+                    y -= 6  # extra space between lines
 
         c.save()
         return pdf_path

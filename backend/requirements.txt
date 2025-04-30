@@ -1,7 +1,11 @@
 Flask
 flask-cors
+flask-jwt-extended
 pymongo
 python-dotenv
 numpy
 scikit-learn
 pickle-mixin
+reportlab
+requests
+python-jwt
