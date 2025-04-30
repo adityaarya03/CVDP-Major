@@ -1,8 +1,12 @@
 import React from 'react'
+import Navbar from '../components/Navbar'
 
 function AIRecommendationsPage() {
   return (
-    <div>AIRecommendationsPage</div>
+    <div>
+     <Navbar />
+     AIRecommendationsPage
+     </div>
   )
 }
 

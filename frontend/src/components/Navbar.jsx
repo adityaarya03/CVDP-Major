@@ -8,8 +8,8 @@ export default function Navbar() {
       </div>
       <div className="flex gap-6">
         <Link to="/report" className="text-gray-700 hover:text-blue-600">Health Report</Link>
-        <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
         <Link to="/recommendations" className="text-gray-700 hover:text-blue-600">AI Recommendations</Link>
+        <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
       </div>
       <div className="relative">
         {/* Profile dropdown to be implemented later */}

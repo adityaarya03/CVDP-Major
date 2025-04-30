@@ -1,18 +1,18 @@
 from flask import Blueprint, request, jsonify
-import jwt
-import datetime
 import os
 from models.userModel import UserModel
 from dotenv import load_dotenv
 from middlewares.authMiddleware import token_required  # Import middleware
 from middlewares.errorHandler import handle_error  # Import error handler
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, set_access_cookies, unset_jwt_cookies
 
 
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 auth_bp = Blueprint("auth_bp", __name__)
+
 
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
@@ -27,12 +27,38 @@ def signup():
     if not name or not email or not password:
         return handle_error("All fields are required", 400)
 
-    response, status_code = UserModel.create_user(name, email, password, age, gender)
+    response, status_code = UserModel.create_user(
+        name, email, password, age, gender)
     return jsonify(response), status_code
+
+# @auth_bp.route("/login", methods=["POST"])
+# def login():
+#     """Handles user login"""
+#     data = request.json
+#     email = data.get("email")
+#     password = data.get("password")
+
+#     if not email or not password:
+#         return handle_error("Email and password are required", 400)
+
+#     user = UserModel.verify_user(email, password)
+#     if not user:
+#         return handle_error("Invalid email or password", 401)
+
+#     token = jwt.encode(
+#     {
+#         "user_id": str(user["_id"]),
+#         "sub": str(user["_id"]),  # ✅ Add "sub" claim
+#         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+#     },
+#     SECRET_KEY,
+#     algorithm="HS256"
+#     )
+#     return jsonify({"message": "Login successful", "token": token, "user_id": user["_id"]}), 200
+
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    """Handles user login"""
     data = request.json
     email = data.get("email")
     password = data.get("password")
@@ -44,16 +70,17 @@ def login():
     if not user:
         return handle_error("Invalid email or password", 401)
 
-    token = jwt.encode(
-    {
+    access_token = create_access_token(identity=str(user["_id"]))
+    response = jsonify({
+        "message": "Login successful",
         "user_id": str(user["_id"]),
-        "sub": str(user["_id"]),  # ✅ Add "sub" claim
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)  
-    },
-    SECRET_KEY,
-    algorithm="HS256"
-    )
-    return jsonify({"message": "Login successful", "token": token, "user_id": user["_id"]}), 200
+    })
+    set_access_cookies(
+        response,
+        access_token,      # ✅ needed for cross-origin
+    )  # Set max age to match token expiration
+    return response, 200
+
 
 @auth_bp.route("/profile", methods=["GET"])
 @jwt_required()
@@ -62,9 +89,10 @@ def get_profile():
     user = UserModel.get_user_by_id(user_id)
     if not user:
         return handle_error("User not found", 404)
-    
+
     user["_id"] = str(user["_id"])
     return jsonify(user), 200
+
 
 @auth_bp.route("/profile", methods=["PUT"])
 @jwt_required()
@@ -91,8 +119,16 @@ def update_profile():
 
     return jsonify({"message": "Profile updated successfully"}), 200
 
+# @auth_bp.route("/logout", methods=["POST"])
+# @jwt_required()
+# def logout():
+#     # Nothing to do server-side if using stateless JWTs
+#     return jsonify({"message": "Logged out successfully"}), 200
+
+
 @auth_bp.route("/logout", methods=["POST"])
 @jwt_required()
 def logout():
-    # Nothing to do server-side if using stateless JWTs
-    return jsonify({"message": "Logged out successfully"}), 200
+    response = jsonify({"message": "Logged out successfully"})
+    unset_jwt_cookies(response)
+    return response, 200

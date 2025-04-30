@@ -13,11 +13,27 @@ from routes.recommendationRoutes import recommendation_bp
 load_dotenv()  # Load environment variables
 
 app = Flask(__name__)
-CORS(app)
+
+# CORS Configuration
+
+CORS(app, 
+     origins=["http://127.0.0.1:5173"],
+     supports_credentials=True,
+     expose_headers=["Set-Cookie"],
+     allow_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # JWT Configuration
-app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")  # Change this to a strong secret key
-app.config["JWT_TOKEN_LOCATION"] = ["headers"]  # Ensure tokens are sent in headers
+app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+app.config["JWT_COOKIE_SECURE"] = False  # ✅ for localhost
+app.config["JWT_COOKIE_SAMESITE"] = "Lax"
+app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+app.config["JWT_COOKIE_NAME"] = "access_token_cookie"
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
+app.config["JWT_COOKIE_DOMAIN"] = None  # Let the browser handle the domain
+app.config["JWT_COOKIE_NAME"] = "access_token_cookie"  # Explicitly set cookie name
 
 # Initialize JWT
 jwt = JWTManager(app)
@@ -29,4 +45,4 @@ app.register_blueprint(health_bp, url_prefix="/api")
 app.register_blueprint(recommendation_bp, url_prefix="/api")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="127.0.0.1", port=5000)

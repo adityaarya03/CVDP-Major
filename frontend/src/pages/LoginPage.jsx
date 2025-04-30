@@ -16,11 +16,15 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await login(form);
-      localStorage.setItem('token', res.token); // later replace with redux
-      toast.success('Login successful!');
-      navigate('/'); // Home
+      const response = await login(form);
+      if (response.message === 'Login successful') {
+        // Wait a short moment to ensure cookie is set
+        await new Promise(resolve => setTimeout(resolve, 100));
+        toast.success('Login successful!');
+        navigate('/');
+      }
     } catch (err) {
+      console.error('Login error:', err);
       toast.error(err.response?.data?.message || 'Login failed');
     }
   };
