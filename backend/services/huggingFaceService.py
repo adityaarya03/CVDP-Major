@@ -5,7 +5,7 @@ class HuggingFaceService:
     @staticmethod
     def generate_recommendations(report, height, weight):
         token = os.getenv("HF_TOKEN")
-        endpoint = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
+        endpoint = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
 
         headers = {
             "Authorization": f"Bearer {token}",

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { signup } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 export default function SignupPage() {
   const [form, setForm] = useState({
@@ -77,6 +78,9 @@ export default function SignupPage() {
         >
           Sign Up
         </button>
+        <div className=' text-sm mt-2'>
+          Already have an account? <Link className=' text-blue-500' to="/login">Login</Link>
+        </div>
       </form>
     </div>
   );

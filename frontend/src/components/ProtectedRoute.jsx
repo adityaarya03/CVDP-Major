@@ -1,22 +1,31 @@
 // src/components/ProtectedRoute.jsx
 import { Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { isLoggedIn } from '../utils/auth';
+import { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchUserProfile } from '../redux/Slices/authSlice';
+import { useRef } from 'react';
 
 export default function ProtectedRoute({ children }) {
-  const [authChecked, setAuthChecked] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
 
+  const triedFetching = useRef(false);
+  const dispatch = useDispatch();
+  const { user, loading } = useSelector((state) => state.auth);
+  
+  // useEffect(() => {
+  //   if (!user) {
+  //     dispatch(fetchUserProfile());
+  //   }
+  // }, [dispatch, user]);
   useEffect(() => {
-    const checkAuth = async () => {
-      const isAuth = await isLoggedIn();
-      setAuthenticated(isAuth);
-      setAuthChecked(true);
-    };
-    checkAuth();
-  }, []);
+    if (!user && !triedFetching.current) {
+      dispatch(fetchUserProfile());
+      triedFetching.current = true;
+    }
+  }, [dispatch, user]);
 
-  if (!authChecked) return null; // Or a loading spinner
+  // 👇 Don't check user until loading is false
+  if (loading) return <div>Loading...</div>; // Or a spinner
 
-  return authenticated ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/login" />;
 }
+

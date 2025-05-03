@@ -14,6 +14,7 @@ export const login = async (formData) => {
   const res = await axios.post(`${BASE_URL}/login`, formData, {
     withCredentials: true,
   });
-  console.log('Login response:', res);
   return res.data;
 };
+
+

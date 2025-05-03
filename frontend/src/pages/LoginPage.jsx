@@ -1,11 +1,15 @@
 // src/pages/LoginPage.jsx
-import { useState } from 'react';
-import { login } from '../services/authService';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
+import { useState } from "react";
+import { login } from "../services/authService";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { fetchUserProfile } from "../redux/Slices/authSlice";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ email: '', password: '' });
+  const dispatch = useDispatch();
+  const [form, setForm] = useState({ email: "", password: "" });
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -17,15 +21,17 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const response = await login(form);
-      if (response.message === 'Login successful') {
-        // Wait a short moment to ensure cookie is set
-        await new Promise(resolve => setTimeout(resolve, 100));
-        toast.success('Login successful!');
-        navigate('/');
+      if (response.message === "Login successful") {
+        toast.success("Login successful!");
+
+        // 👇 Fetch user profile so Redux updates `user` state
+        await dispatch(fetchUserProfile());
+
+        navigate("/");
       }
     } catch (err) {
-      console.error('Login error:', err);
-      toast.error(err.response?.data?.message || 'Login failed');
+      console.error("Login error:", err);
+      toast.error(err.response?.data?.message || "Login failed");
     }
   };
 
@@ -37,11 +43,11 @@ export default function LoginPage() {
       >
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
-        {['email', 'password'].map((field) => (
+        {["email", "password"].map((field) => (
           <div key={field} className="mb-4">
             <label className="block text-gray-700">{field.toUpperCase()}</label>
             <input
-              type={field === 'password' ? 'password' : 'text'}
+              type={field === "password" ? "password" : "text"}
               name={field}
               value={form[field]}
               onChange={handleChange}
@@ -57,6 +63,12 @@ export default function LoginPage() {
         >
           Log In
         </button>
+        <div className=" text-sm mt-2">
+          Don't have an account?{" "}
+          <Link className=" text-blue-500" to="/signup">
+            Sign up
+          </Link>
+        </div>
       </form>
     </div>
   );

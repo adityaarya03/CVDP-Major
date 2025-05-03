@@ -7,7 +7,39 @@ import DashboardPage from './pages/DashboardPage';
 import AIRecommendationsPage from './pages/AIRecommendationsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
+
+import { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUserProfile } from './redux/Slices/authSlice';
+
 function App() {
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
+  const hasFetched = useRef(false);
+
+  // useEffect(() => {
+  //   if (!hasFetched.current) {
+  //     dispatch(fetchUserProfile());
+  //     hasFetched.current = true;
+  //   }
+  // }, [dispatch]);
+
+  useEffect(() => {
+    if (!hasFetched.current) {
+      dispatch(fetchUserProfile()).unwrap().catch(() => {
+        // Backend says session is invalid (e.g., cookie deleted) — clear redux
+        localStorage.clear(); // optional
+        sessionStorage.clear(); // if used
+        // Optionally dispatch logoutUser or reset auth
+      });
+      hasFetched.current = true;
+    }
+  }, [dispatch]);
+
+  
+
+  if (loading) return <div>Loading...</div>; // or a full-screen loader
+
   return (
     <Routes>
       {/* Public Routes */}
@@ -53,5 +85,6 @@ function App() {
     </Routes>
   );
 }
+
 
 export default App;
