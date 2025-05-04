@@ -7,11 +7,12 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const fetchHistory = createAsyncThunk('history/fetch', async (_, thunkAPI) => {
   try {
     const res = await axios.get(`${BASE_URL}/history`, { withCredentials: true });
-    return res.data.predictions;
+    return res.data.history; // ✅ Fix here
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to fetch history');
   }
 });
+
 
 const historySlice = createSlice({
   name: 'history',

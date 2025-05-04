@@ -3,6 +3,7 @@ import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import authReducer from './Slices/authSlice';
 import predictionReducer from './Slices/predictionSlice';
 import historyReducer from './Slices/historySlice';
+import healthReportReducer from './Slices/healthReportSlice';
 
 import {
   persistStore,
@@ -21,12 +22,13 @@ const rootReducer = combineReducers({
   auth: authReducer,
   prediction: predictionReducer,
   history: historyReducer,
+  healthReport: healthReportReducer,
 });
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth'], // ✅ Only persist auth, not prediction/history
+  whitelist: ['auth','prediction'], // ✅ Only persist auth, not prediction/history
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

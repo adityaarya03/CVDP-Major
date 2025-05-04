@@ -10,12 +10,14 @@ export const fetchLatestPrediction = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const res = await axios.get(`${BASE_URL}/history`, { withCredentials: true });
-      return res.data?.[0] || null; // Only take the most recent entry
+      if (!Array.isArray(res.data) || res.data.length === 0) return null;
+      return res.data[0]; // latest prediction
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to fetch latest prediction');
     }
   }
 );
+
 
 // Submit a new prediction form
 export const submitPrediction = createAsyncThunk(
@@ -38,11 +40,16 @@ const predictionSlice = createSlice({
     error: null,
   },
   reducers: {
-    clearPrediction: (state) => {
-      state.result = null;
-      state.error = null;
-    },
+  clearPrediction: (state) => {
+    state.result = null;
+    state.error = null;
   },
+  setLatestPrediction: (state, action) => {
+    state.result = action.payload;
+    state.error = null;
+  },
+},
+
   extraReducers: (builder) => {
     builder
       // Fetching latest
@@ -76,5 +83,6 @@ const predictionSlice = createSlice({
   },
 });
 
-export const { clearPrediction } = predictionSlice.actions;
+export const { clearPrediction, setLatestPrediction } = predictionSlice.actions;
+
 export default predictionSlice.reducer;
