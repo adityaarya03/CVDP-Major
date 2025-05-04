@@ -25,7 +25,11 @@ export default function LoginPage() {
         toast.success("Login successful!");
 
         // 👇 Fetch user profile so Redux updates `user` state
-        await dispatch(fetchUserProfile());
+        // await dispatch(fetchUserProfile());
+        // setTimeout(async () => {
+        //   await dispatch(fetchUserProfile());
+        //   navigate("/");
+        // }, 300);
 
         navigate("/");
       }
