@@ -32,6 +32,7 @@ app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
 app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 app.config["JWT_COOKIE_NAME"] = "access_token_cookie"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
+app.config["JWT_COOKIE_DOMAIN"] = ".onrender.com"
 app.config["JWT_COOKIE_DOMAIN"] = None  # Let the browser handle the domain
 app.config["JWT_COOKIE_NAME"] = "access_token_cookie"  # Explicitly set cookie name
 
