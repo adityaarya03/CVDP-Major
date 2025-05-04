@@ -17,7 +17,7 @@ app = Flask(__name__)
 # CORS Configuration
 
 CORS(app, 
-     origins=["http://127.0.0.1:5173"],
+     origins=os.getenv("CORS_ORIGINS").split(","),
      supports_credentials=True,
      expose_headers=["Set-Cookie"],
      allow_headers=["Content-Type", "Authorization"],
