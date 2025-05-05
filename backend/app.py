@@ -24,17 +24,31 @@ CORS(app,
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # JWT Configuration
-app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
-app.config["JWT_COOKIE_SECURE"] = os.getenv("JWT_COOKIE_SECURE", "False") == "True"  # ✅ for localhost
+# app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
+# app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+# app.config["JWT_COOKIE_SECURE"] = os.getenv("JWT_COOKIE_SECURE", "False") == "True"  #  for localhost
+# app.config["JWT_COOKIE_SAMESITE"] = "Lax"
+# app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
+# app.config["JWT_COOKIE_CSRF_PROTECT"] = False
+# app.config["JWT_COOKIE_NAME"] = "access_token_cookie"
+# app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
+# app.config["JWT_COOKIE_DOMAIN"] = ".onrender.com"
+# app.config["JWT_COOKIE_DOMAIN"] = None  # Let the browser handle the domain
+
+app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY", "dev_secret")
+app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
+app.config["JWT_COOKIE_SECURE"] = os.getenv("JWT_COOKIE_SECURE", "False").lower() == "true"
 app.config["JWT_COOKIE_SAMESITE"] = "Lax"
 app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
 app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 app.config["JWT_COOKIE_NAME"] = "access_token_cookie"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600  # 1 hour
-app.config["JWT_COOKIE_DOMAIN"] = ".onrender.com"
-app.config["JWT_COOKIE_DOMAIN"] = None  # Let the browser handle the domain
-app.config["JWT_COOKIE_NAME"] = "access_token_cookie"  # Explicitly set cookie name
+app.config["JWT_HEADER_NAME"] = "Authorization"
+app.config["JWT_HEADER_TYPE"] = "Bearer"
+
+cookie_domain = os.getenv("JWT_COOKIE_DOMAIN", None)
+if cookie_domain:
+    app.config["JWT_COOKIE_DOMAIN"] = cookie_domain
 
 # Initialize JWT
 jwt = JWTManager(app)

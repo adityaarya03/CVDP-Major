@@ -26,10 +26,16 @@ function AIRecommendationsPage() {
 
     try {
       setLoading(true);
+      const token = localStorage.getItem('accessToken');
       const res = await axios.post(
         `${API_BASE_URL}/recommendations`,
         { height: Number(height), weight: Number(weight) },
-        { withCredentials: true }
+        { withCredentials: true,
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+         }
       );
 
       const data = res.data?.recommendations;

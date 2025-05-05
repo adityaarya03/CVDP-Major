@@ -2,12 +2,20 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export const fetchHealthReport = createAsyncThunk(
   'healthReport/fetch',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('http://127.0.0.1:5000/api/report', {
+        const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`${BASE_URL}/report`, {
         withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
       return response.data.report;
     } catch (err) {

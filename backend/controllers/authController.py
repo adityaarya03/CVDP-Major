@@ -74,7 +74,9 @@ def login():
     response = jsonify({
         "message": "Login successful",
         "user_id": str(user["_id"]),
+        "access_token": access_token,  # ✅ add this
     })
+
     set_access_cookies(
         response,
         access_token,      # ✅ needed for cross-origin

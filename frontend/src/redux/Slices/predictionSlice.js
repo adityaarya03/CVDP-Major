@@ -9,7 +9,14 @@ export const fetchLatestPrediction = createAsyncThunk(
   'prediction/fetchLatest',
   async (_, thunkAPI) => {
     try {
-      const res = await axios.get(`${BASE_URL}/history`, { withCredentials: true });
+      const token = localStorage.getItem("accessToken");
+      const res = await axios.get(`${BASE_URL}/history`, { 
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json', 
+        },
+       });
       if (!Array.isArray(res.data) || res.data.length === 0) return null;
       return res.data[0]; // latest prediction
     } catch (err) {
@@ -24,7 +31,14 @@ export const submitPrediction = createAsyncThunk(
   'prediction/submit',
   async (formData, thunkAPI) => {
     try {
-      const res = await axios.post(`${BASE_URL}/predict`, formData, { withCredentials: true });
+      const token = localStorage.getItem("accessToken");
+      const res = await axios.post(`${BASE_URL}/predict`, formData, { 
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+       });
       return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data?.message || 'Prediction failed');

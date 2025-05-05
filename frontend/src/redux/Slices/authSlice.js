@@ -6,7 +6,13 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchUserProfile = createAsyncThunk('auth/fetchProfile', async (_, thunkAPI) => {
   try {
-    const res = await axios.get(`${BASE_URL}/profile`, { withCredentials: true });
+    const token = localStorage.getItem("accessToken");
+    const res = await axios.get(`${BASE_URL}/profile`, { 
+      withCredentials: true,headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
     return res.data;
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to fetch user');
@@ -15,7 +21,14 @@ export const fetchUserProfile = createAsyncThunk('auth/fetchProfile', async (_, 
 
 export const logoutUser = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
   try {
-    const res = await axios.post(`${BASE_URL}/logout`, {}, { withCredentials: true });
+    const token = localStorage.getItem("accessToken");
+    const res = await axios.post(`${BASE_URL}/logout`, {}, { 
+      withCredentials: true,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
     return res.data.message;
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data?.message || 'Logout failed');

@@ -73,13 +73,17 @@ const downloadPDF = async () => {
 
   try {
     setDownloading(true);
-    
+    const token = localStorage.getItem('accessToken');
     const response = await axios.post(
       `${import.meta.env.VITE_API_BASE_URL}/report/pdf`,
       { height: Number(height), weight: Number(weight) },
       {
         responseType: 'blob',
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       }
     );
 

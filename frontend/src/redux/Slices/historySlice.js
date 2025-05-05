@@ -6,7 +6,14 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const fetchHistory = createAsyncThunk('history/fetch', async (_, thunkAPI) => {
   try {
-    const res = await axios.get(`${BASE_URL}/history`, { withCredentials: true });
+    const token = localStorage.getItem("accessToken");
+    const res = await axios.get(`${BASE_URL}/history`, { 
+      withCredentials: true,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
     return res.data.history; // ✅ Fix here
   } catch (err) {
     return thunkAPI.rejectWithValue(err.response?.data?.message || 'Failed to fetch history');
