@@ -1,16 +1,16 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import SignupPage from './pages/SignupPage';
-import LoginPage from './pages/LoginPage';
-import HomePage from './pages/HomePage';
-import HealthReportPage from './pages/HealthReportPage';
-import DashboardPage from './pages/DashboardPage';
-import AIRecommendationsPage from './pages/AIRecommendationsPage';
-import ProtectedRoute from './components/ProtectedRoute';
+import { Routes, Route, Navigate } from "react-router-dom";
+import SignupPage from "./pages/SignupPage";
+import LoginPage from "./pages/LoginPage";
+import HomePage from "./pages/HomePage";
+import HealthReportPage from "./pages/HealthReportPage";
+import DashboardPage from "./pages/DashboardPage";
+import AIRecommendationsPage from "./pages/AIRecommendationsPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Spinner from "./components/Spinner";
 
-
-import { useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchUserProfile } from './redux/Slices/authSlice';
+import { useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserProfile } from "./redux/Slices/authSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -26,19 +26,24 @@ function App() {
 
   useEffect(() => {
     if (!hasFetched.current) {
-      dispatch(fetchUserProfile()).unwrap().catch(() => {
-        // Backend says session is invalid (e.g., cookie deleted) — clear redux
-        localStorage.clear(); // optional
-        sessionStorage.clear(); // if used
-        // Optionally dispatch logoutUser or reset auth
-      });
+      dispatch(fetchUserProfile())
+        .unwrap()
+        .catch(() => {
+          // Backend says session is invalid (e.g., cookie deleted) — clear redux
+          localStorage.clear(); // optional
+          sessionStorage.clear(); // if used
+          // Optionally dispatch logoutUser or reset auth
+        });
       hasFetched.current = true;
     }
   }, [dispatch]);
 
-  
-
-  if (loading) return <div>Loading...</div>; // or a full-screen loader
+  if (loading)
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Spinner />
+      </div>
+    ); // or a full-screen loader
 
   return (
     <Routes>
@@ -85,6 +90,5 @@ function App() {
     </Routes>
   );
 }
-
 
 export default App;

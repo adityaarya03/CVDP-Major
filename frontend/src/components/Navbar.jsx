@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../redux/Slices/authSlice";
 import { toast } from "react-hot-toast";
@@ -8,6 +8,8 @@ import { Menu, X } from "lucide-react";
 export default function Navbar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isActive = (path) => location.pathname === path;
   const user = useSelector((state) => state.auth.user);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -41,10 +43,10 @@ export default function Navbar() {
 
       {/* Desktop Links */}
       <div className="hidden md:flex gap-6">
-        <Link to="/" className="text-gray-700 hover:text-blue-600">Predict</Link>
-        <Link to="/report" className="text-gray-700 hover:text-blue-600">Health Report</Link>
-        <Link to="/recommendations" className="text-gray-700 hover:text-blue-600">AI Recommendations</Link>
-        <Link to="/dashboard" className="text-gray-700 hover:text-blue-600">Dashboard</Link>
+        <Link to="/" className={`${isActive("/") ? "text-blue-600 font-semibold" : "text-gray-700"} hover:text-blue-600`}>Predict</Link>
+        <Link to="/report" className={`${isActive("/report") ? "text-blue-600 font-semibold" : "text-gray-700"} hover:text-blue-600`}>Health Report</Link>
+        <Link to="/recommendations" className={`${isActive("/recommendations") ? "text-blue-600 font-semibold" : "text-gray-700"} hover:text-blue-600`}>AI Recommendations</Link>
+        <Link to="/dashboard" className={`${isActive("/dashboard") ? "text-blue-600 font-semibold" : "text-gray-700"} hover:text-blue-600`}>Dashboard</Link>
       </div>
 
       {/* Burger Menu Icon */}
@@ -107,10 +109,10 @@ export default function Navbar() {
               </button>
             </div>
           )}
-          <Link to="/" className="mb-2 text-gray-700 hover:text-blue-600" onClick={() => setIsMobileMenuOpen(false)}>Predict</Link>
-          <Link to="/report" className="mb-2 text-gray-700 hover:text-blue-600" onClick={() => setIsMobileMenuOpen(false)}>Health Report</Link>
-          <Link to="/recommendations" className="mb-2 text-gray-700 hover:text-blue-600" onClick={() => setIsMobileMenuOpen(false)}>AI Recommendations</Link>
-          <Link to="/dashboard" className="mb-4 text-gray-700 hover:text-blue-600" onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
+          <Link to="/" className={`mb-2 ${isActive("/") ? "text-blue-600 font-semibold" : "text-gray-700"} hover:text-blue-600`} onClick={() => setIsMobileMenuOpen(false)}>Predict</Link>
+          <Link to="/report" className={`mb-2 ${isActive("/report") ? "text-blue-600 font-semibold" : "text-gray-700"} hover:text-blue-600`} onClick={() => setIsMobileMenuOpen(false)}>Health Report</Link>
+          <Link to="/recommendations" className={`mb-2 ${isActive("/recommendations") ? "text-blue-600 font-semibold" : "text-gray-700"} hover:text-blue-600`} onClick={() => setIsMobileMenuOpen(false)}>AI Recommendations</Link>
+          <Link to="/dashboard" className={`mb-4 ${isActive("/dashboard") ? "text-blue-600 font-semibold" : "text-gray-700"} hover:text-blue-600`} onClick={() => setIsMobileMenuOpen(false)}>Dashboard</Link>
           <button
             onClick={() => {
               handleLogout();
